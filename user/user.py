@@ -10,7 +10,7 @@ key = Fernet.generate_key()
 def get_users():
     conn = db.db_connection()
     cur = conn.cursor(cursor_factory=extras.RealDictCursor)
-    cur.execute("SELECT * FROM users")
+    cur.execute("SELECT u.id, u.username, u.email FROM users u")
     users = cur.fetchall()
     cur.close()
     conn.close()
@@ -78,3 +78,17 @@ def delete_user(id):
     if user is None:
         return jsonify({'message': 'User not found'}), 404
     return jsonify(user)
+
+
+def get_users_tasks(id):
+    conn = db.db_connection()
+    cur = conn.cursor(cursor_factory=extras.RealDictCursor)
+    cur.execute("""SELECT u.id as user_id, t.title, t.is_open, t.created_at
+                   FROM users u 
+                   INNER JOIN tasks t ON u.id = t.user_id
+                   ORDER BY t.created_at DESC
+                """)
+    users = cur.fetchall()
+    cur.close()
+    conn.close()
+    return jsonify(users)
